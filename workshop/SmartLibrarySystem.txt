@@ -1,0 +1,177 @@
+import java.util.Locale;
+
+// Data Model
+class Book {
+    int bookId;
+    String title;
+    String author;
+    double price;
+
+    public Book(int bookId, String title, String author, double price) {
+        this.bookId = bookId;
+        this.title = title;
+        this.author = author;
+        this.price = price;
+    }
+
+    @Override
+    public String toString() {
+        return "[" + bookId + "] " + title + " by " + author + " - Rs. " + price;
+    }
+}
+
+public class SmartLibrarySystem {
+
+    // Task 1: Remove Duplicate Books In-Place
+    public static int removeDuplicates(Book[] books, int n) {
+        if (n == 0 || n == 1) {
+            return n;
+        }
+        
+        int uniqueIndex = 0; // Pointer for the last unique element found
+        for (int i = 1; i < n; i++) {
+            if (books[i].bookId != books[uniqueIndex].bookId) {
+                uniqueIndex++;
+                books[uniqueIndex] = books[i];
+            }
+        }
+        return uniqueIndex + 1; // Return count of unique books
+    }
+
+    // Task 2: Partial Title Search (Case-Insensitive)
+    public static void searchByTitle(Book[] books, int count, String query) {
+        System.out.println("Search Results for '" + query + "':");
+        String lowerCaseQuery = query.toLowerCase(Locale.ROOT);
+        boolean found = false;
+
+        for (int i = 0; i < count; i++) {
+            if (books[i].title.toLowerCase(Locale.ROOT).contains(lowerCaseQuery)) {
+                System.out.println(" - Found: [" + books[i].bookId + "] " + books[i].title + " (Rs. " + books[i].price + ")");
+                found = true;
+            }
+        }
+        if (!found) {
+            System.out.println(" - No books matched your search query.");
+        }
+    }
+
+    // Task 3: Sort by Price (Selection Sort style)
+    public static void sortByPrice(Book[] books, int count) {
+        int swapCount = 0;
+
+        for (int i = 0; i < count - 1; i++) {
+            int minIndex = i;
+            for (int j = i + 1; j < count; j++) {
+                if (books[j].price < books[minIndex].price) {
+                    minIndex = j;
+                }
+            }
+            // Swap if a smaller element was found
+            if (minIndex != i) {
+                Book temp = books[i];
+                books[i] = books[minIndex];
+                books[minIndex] = temp;
+                swapCount++;
+            }
+        }
+        
+        System.out.println("Books Sorted by Price:");
+        for (int i = 0; i < count; i++) {
+            System.out.println("  " + (i + 1) + ". [" + books[i].bookId + "] " + books[i].title + " - Rs. " + books[i].price);
+        }
+        System.out.println("Total Swaps: " + swapCount);
+    }
+
+    // Task 4: Search by Price (Binary Search)
+    public static int searchByPrice(Book[] books, int count, double targetPrice) {
+        int low = 0;
+        int high = count - 1;
+
+        while (low <= high) {
+            int mid = low + (high - low) / 2;
+            
+            // Using a small tolerance threshold for floating point comparison accuracy
+            if (Math.abs(books[mid].price - targetPrice) < 0.0001) {
+                return mid; 
+            } else if (books[mid].price < targetPrice) {
+                low = mid + 1;
+            } else {
+                high = mid - 1;
+            }
+        }
+        return -1;
+    }
+
+    // Task 5: Sliding Window for Target Cost S
+    public static int minBooksForTargetCost(Book[] books, int count, double targetCost) {
+        int minLength = Integer.MAX_VALUE;
+        double currentSum = 0.0;
+        int left = 0;
+
+        for (int right = 0; right < count; right++) {
+            currentSum += books[right].price;
+
+            // Shrink the window from the left as long as the condition is satisfied
+            while (currentSum >= targetCost) {
+                minLength = Math.min(minLength, right - left + 1);
+                currentSum -= books[left].price;
+                left++;
+            }
+        }
+
+        return (minLength == Integer.MAX_VALUE) ? 0 : minLength;
+    }
+
+    // Main tester method running the requested sample test case
+    public static void main(String[] args) {
+        // Initial Input Array (6 Books with 1 Duplicate based on ID 101)
+        Book[] books = new Book[6];
+        books[0] = new Book(101, "Data Structures", "Mark", 400.0);
+        books[1] = new Book(101, "Data Structures", "Mark", 400.0); // Duplicate
+        books[2] = new Book(102, "Java Basics", "James", 300.0);
+        books[3] = new Book(103, "Python Guide", "Guido", 600.0);
+        books[4] = new Book(104, "Database Systems", "Raghu", 500.0);
+        books[5] = new Book(105, "Computer Networks", "Andrew", 700.0);
+
+        int totalBooks = books.length;
+
+        // 1. Task 1 execution
+        int uniqueCount = removeDuplicates(books, totalBooks);
+        System.out.println("1. After Task 1 (Remove Duplicates):");
+        System.out.println("Unique Books Count: " + uniqueCount);
+        System.out.println("Book List:");
+        for (int i = 0; i < uniqueCount; i++) {
+            System.out.println("  [" + books[i].bookId + "] " + books[i].title + " - Rs. " + books[i].price);
+        }
+        System.out.println();
+
+        // 2. Task 2 execution
+        System.out.println("2. After Task 2 (Search Query: \"data\"):");
+        searchByTitle(books, uniqueCount, "data");
+        System.out.println();
+
+        // 3. Task 3 execution
+        System.out.println("3. After Task 3 (Sort by Price):");
+        sortByPrice(books, uniqueCount);
+        System.out.println();
+
+        // 4. Task 4 execution
+        double searchPrice = 500.0;
+        System.out.println("4. After Task 4 (Search for Price: " + searchPrice + "):");
+        System.out.println("Searching for Price Rs. " + searchPrice + "...");
+        int indexFound = searchByPrice(books, uniqueCount, searchPrice);
+        if (indexFound != -1) {
+            System.out.println("Result: Book found at index " + indexFound + ": [" + books[indexFound].bookId + "] " + books[indexFound].title + " (Rs. " + books[indexFound].price + ")");
+        } else {
+            System.out.println("Result: Book not found.");
+        }
+        System.out.println();
+
+        // 5. Task 5 execution
+        double targetCost = 1000.0;
+        System.out.println("5. After Task 5 (Sliding Window for Target Cost S = Rs. " + targetCost + "):");
+        System.out.println("Finding minimum consecutive books whose total price >= Rs. " + targetCost + "...");
+        int minBooks = minBooksForTargetCost(books, uniqueCount, targetCost);
+        System.out.println("Minimum Consecutive Books Needed: " + minBooks);
+    }
+}
